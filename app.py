@@ -82,6 +82,8 @@ def generate_test_cases(task_description: str) -> str:
 # ==========================================
 def task_input_node(state: CrewState):
     print("--- STAGE: task_input ---")
+    # stage is set explicitly here so the state reflects reality
+    # immediately, instead of relying on a routing field.
     return {"stage": "task_input", "next_step": "developer"}
 
 
@@ -90,6 +92,10 @@ def real_time_developer(state: CrewState):
     task = state["messages"][-1].content
     dev_prompt = (
         f"Write a clean Python script to solve this: {task}. "
+        f"The script will run in a non-interactive environment with no "
+        f"stdin available, so do NOT use input() or any function that waits "
+        f"for user input. Instead, define example values directly in the "
+        f"code and print the result. "
         f"Only return the code, no explanation or markdown formatting."
     )
 
@@ -101,6 +107,7 @@ def real_time_developer(state: CrewState):
         code_str = str(content)
 
     print(code_str)
+    # stage updates the moment we ENTER this node, not after it finishes
     return {"code": code_str, "stage": "developer", "next_step": "tester"}
 
 
