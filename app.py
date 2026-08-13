@@ -19,12 +19,12 @@ from pydantic import BaseModel, Field
 # ==========================================
 GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# NOTE: verify this model name against Google's current list of
-# available Gemini models before deploying - names change over time.
+# gemini-3.6-flash is the current GA flash-tier model (as of Aug 2026).
+# Google deprecates model versions periodically - if this 404s again,
+# run genai.list_models() with your key to see what's currently valid.
 llm_flash = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
+    model="gemini-3.6-flash",
     api_key=GOOGLE_API_KEY,
-    temperature=0,
 )
 llm = llm_flash
 
@@ -82,8 +82,6 @@ def generate_test_cases(task_description: str) -> str:
 # ==========================================
 def task_input_node(state: CrewState):
     print("--- STAGE: task_input ---")
-    # stage is set explicitly here so the state reflects reality
-    # immediately, instead of relying on a routing field.
     return {"stage": "task_input", "next_step": "developer"}
 
 
@@ -103,7 +101,6 @@ def real_time_developer(state: CrewState):
         code_str = str(content)
 
     print(code_str)
-    # stage updates the moment we ENTER this node, not after it finishes
     return {"code": code_str, "stage": "developer", "next_step": "tester"}
 
 
